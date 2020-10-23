@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,34 +11,66 @@ using System.Threading.Tasks;
 namespace ServerLibrary
 {
     /// <summary>
-    /// Odsyła komunikaty zakodowane w Base64
+    /// Abstract class for Base64 servers
     /// </summary>
-    public class ServerBase64
+    public abstract class AbstractServerBase64
     {
-        const int BUFFER_SIZE = 1024;
-        TcpListener server = new TcpListener(IPAddress.Parse("127.0.0.1"), 2048);
-
-        public void Start()
+        #region Fields
+        int bufferSize = 1024;
+        bool running;
+        TcpListener listener;
+        #endregion
+        #region Constructors
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="ip">IP addres of the server</param>
+        /// <param name="port">Port numer of the server</param>
+        public AbstractServerBase64(IPAddress ip, int port)
         {
-            server.Start();
-            TcpClient client = server.AcceptTcpClient();
-            Console.WriteLine("Połączono z klientem");
-            NetworkStream stream = client.GetStream();
-            while (true)
+            running = false;
+            if (port < 49151 && port > 1024)
             {
-                byte[] buffer = new byte[BUFFER_SIZE];
-                int len = stream.Read(buffer, 0, BUFFER_SIZE);
-                if (buffer[0] != 13 && buffer[1] != 10)
-                {
-                    Console.WriteLine(len + " " + Encoding.Default.GetString(buffer));
-                    char[] encodedBuffer = new char[BUFFER_SIZE * 2];
-                    _ = Convert.ToBase64CharArray(buffer, 0, len, encodedBuffer, 0);
-                    stream.Write(Encoding.UTF8.GetBytes(encodedBuffer), 0, encodedBuffer.Length);
-                    Console.WriteLine("Wiadomość w formacie Base64: " +
-                        Encoding.Default.GetString(Encoding.UTF8.GetBytes(encodedBuffer)));
-                }
+                listener = new TcpListener(ip, port);
             }
+            else throw new Exception("nieprawidłowy numer portu");
         }
+        #endregion
+        #region properties
+        /// <summary>
+        /// Property allows to get and modify buffer size, cant be chandeg when server is running or buffer is too big.
+        /// </summary>
+        public int BufferSize { get => bufferSize; set
+            {
+                if (value < 0 || value > 1024 * 1024) throw new Exception("nieprawidłowy rozmiar bufora");
+                if (!running) bufferSize = value; 
+                else throw new Exception("Nie można zmienić rozmiaru bufora w trakcie działania serevera");
+            } }
+        protected TcpListener Listener { get; set; }
+        #endregion
+        #region Functions
+        /// <summary>
+        /// Starts the TCPListener.
+        /// </summary>
+        protected void StartListening()
+        {
+            running = true;
+            listener.Start();
+        }
+        /// <summary>
+        /// Waits and accepts clients connection.
+        /// </summary>
+        protected abstract void AcceptConneton();
+        /// <summary>
+        /// Implements data transminion between clien and server
+        /// </summary>
+        /// <param name="stream">Transminsion stream</param>
+        protected abstract void BeginDataTransmission(NetworkStream stream);
+        /// <summary>
+        /// Makes server doing his job
+        /// </summary>
+        protected abstract void Start();
+        #endregion
 
     }
 }
