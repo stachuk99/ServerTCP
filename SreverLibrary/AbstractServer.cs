@@ -44,9 +44,14 @@ namespace ServerLibrary
             {
                 if (value < 0 || value > 1024 * 1024) throw new Exception("nieprawidłowy rozmiar bufora");
                 if (!running) bufferSize = value; 
-                else throw new Exception("Nie można zmienić rozmiaru bufora w trakcie działania serevera");
+                else throw new Exception("Nie można zmienić rozmiaru bufora w trakcie działania servera");
             } }
-        protected TcpListener Listener { get; set; }
+        protected TcpListener Listener { get => listener; set
+            {
+                if (!running) listener = value;
+                else throw new Exception("Nie można zmienić listenera w trakcie działania servera");
+            }
+        }
         #endregion
         #region Functions
         /// <summary>
@@ -60,7 +65,7 @@ namespace ServerLibrary
         /// <summary>
         /// Waits and accepts clients connection.
         /// </summary>
-        protected abstract void AcceptConneton();
+        protected abstract void AcceptConnetion();
         /// <summary>
         /// Implements data transminion between clien and server
         /// </summary>
@@ -69,7 +74,7 @@ namespace ServerLibrary
         /// <summary>
         /// Makes server doing his job
         /// </summary>
-        protected abstract void Start();
+        public abstract void Start();
         #endregion
 
     }
