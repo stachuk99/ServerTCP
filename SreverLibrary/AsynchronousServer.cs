@@ -17,6 +17,11 @@ namespace ServerLibrary
         NetworkStream stream;
         #endregion
         #region Constructors
+        /// <summary>
+        /// Deafault constructor
+        /// </summary>
+        /// <param name="ip">Ip address</param>
+        /// <param name="port">tcp/ip port number</param>
         public AsynchronousServerBase64(IPAddress ip, int port) : base(ip, port)
         {
 
@@ -24,6 +29,9 @@ namespace ServerLibrary
         #endregion
         #region Functions
         public delegate void DataTransmissionDelegate(NetworkStream stream);
+        /// <summary>
+        /// Waits for connections any makes a new delegate for each client
+        /// </summary>
         protected override void AcceptConnetion()
         {
             while (true)
@@ -39,6 +47,10 @@ namespace ServerLibrary
             Console.WriteLine(ar.AsyncState.ToString());
             Console.WriteLine("Posprzątane");
         }
+        /// <summary>
+        /// Implements data transminion between clients and server
+        /// </summary>
+        /// <param name="stream">Transmission stream</param>
         protected override void BeginDataTransmission(NetworkStream stream)
         {
             byte[] buffer = new byte[BufferSize];
@@ -56,6 +68,9 @@ namespace ServerLibrary
                 }
             }
         }
+        /// <summary>
+        /// Runs the server
+        /// </summary>
         public override void Start()
         {
             StartListening();

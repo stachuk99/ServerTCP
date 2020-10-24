@@ -40,7 +40,7 @@ namespace ServerLibrary
             BeginDataTransmission(stream);
         }
         /// <summary>
-        /// Implements data transminion between clien and server
+        /// Implements data transminion between client and server
         /// </summary>
         /// <param name="stream">Transminsion stream</param>
         protected override void BeginDataTransmission(NetworkStream stream)

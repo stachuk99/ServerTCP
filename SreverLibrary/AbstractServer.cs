@@ -72,7 +72,7 @@ namespace ServerLibrary
         /// <summary>
         /// Implements data transminion between clien and server
         /// </summary>
-        /// <param name="stream">Transminsion stream</param>
+        /// <param name="stream">Transmission stream</param>
         protected abstract void BeginDataTransmission(NetworkStream stream);
         /// <summary>
         /// Makes server doing his job
