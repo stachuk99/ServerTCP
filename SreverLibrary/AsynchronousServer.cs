@@ -9,40 +9,36 @@ using System.Threading.Tasks;
 namespace ServerLibrary
 {
     /// <summary>
-    /// Provides Base64 endoding messages to one client
+    /// Provides Base64 endoding messages to many clients
     /// </summary>
-    public class SynchronousServerBase64 : AbstractServerBase64
+    public class AsynchronousServerBase64 : AbstractServerBase64
     {
         #region Fields
-        TcpClient client;
         NetworkStream stream;
         #endregion
         #region Constructors
-        /// <summary>
-        /// Deafault constructor
-        /// </summary>
-        /// <param name="ip">Ip address</param>
-        /// <param name="port">tcp/ip port number</param>
-        public SynchronousServerBase64(IPAddress ip, int port): base(ip, port)
+        public AsynchronousServerBase64(IPAddress ip, int port) : base(ip, port)
         {
 
         }
         #endregion
         #region Functions
-        /// <summary>
-        /// Waits for client connection
-        /// </summary>
+        public delegate void DataTransmissionDelegate(NetworkStream stream);
         protected override void AcceptConnetion()
         {
-            TcpListener l = Listener;
-            client = l.AcceptTcpClient();
-            stream = client.GetStream();
-            BeginDataTransmission(stream);
+            while (true)
+            {
+                TcpClient client = Listener.AcceptTcpClient();
+                stream = client.GetStream();
+                DataTransmissionDelegate transmissionDelegate = new DataTransmissionDelegate(BeginDataTransmission);
+                transmissionDelegate.BeginInvoke(stream, TransmissionCallback, client);
+            }
         }
-        /// <summary>
-        /// Implements data transminion between clien and server
-        /// </summary>
-        /// <param name="stream">Transminsion stream</param>
+        private void TransmissionCallback(IAsyncResult ar)
+        {
+            Console.WriteLine(ar.AsyncState.ToString());
+            Console.WriteLine("Posprzątane");
+        }
         protected override void BeginDataTransmission(NetworkStream stream)
         {
             byte[] buffer = new byte[BufferSize];
@@ -51,7 +47,7 @@ namespace ServerLibrary
                 int len = stream.Read(buffer, 0, BufferSize);
                 if (buffer[0] != 13 && buffer[1] != 10)
                 {
-                    Console.WriteLine(len + " " + Encoding.Default.GetString(buffer).Trim());
+                    Console.WriteLine(len + " " + Encoding.Default.GetString(buffer));
                     char[] encodedBuffer = new char[BufferSize * 2];
                     _ = Convert.ToBase64CharArray(buffer, 0, len, encodedBuffer, 0);
                     stream.Write(Encoding.UTF8.GetBytes(encodedBuffer), 0, encodedBuffer.Length);
@@ -60,15 +56,11 @@ namespace ServerLibrary
                 }
             }
         }
-        /// <summary>
-         /// Runs the server
-         /// </summary>
         public override void Start()
         {
             StartListening();
             AcceptConnetion();
         }
-
         #endregion
     }
 }

@@ -38,7 +38,7 @@ namespace ServerLibrary
         #endregion
         #region properties
         /// <summary>
-        /// Property allows to get and modify buffer size, cant be chandeg when server is running or buffer is too big.
+        /// Property allows to get and modify buffer size, cant be changed when server is running or given size is incorrect.
         /// </summary>
         public int BufferSize { get => bufferSize; set
             {
@@ -46,6 +46,9 @@ namespace ServerLibrary
                 if (!running) bufferSize = value; 
                 else throw new Exception("Nie można zmienić rozmiaru bufora w trakcie działania servera");
             } }
+        /// <summary>
+        /// Property allows to get and set Tcp listenet, cant be done when server is running.
+        /// </summary>
         protected TcpListener Listener { get => listener; set
             {
                 if (!running) listener = value;
